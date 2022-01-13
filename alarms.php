@@ -43,6 +43,7 @@ $client->subscribe("$MQTT_TOPIC_PREFIX/stat/alarms/+",
     preg_match_all('/alarms\/alarm([0-9]*)/', $topic, $matches);
     $index = $matches[1][0];
     $alarm->index = $index;
+    $alarm->json = $message;
     array_push($alarms, $alarm);
 
     $found_all = true;
@@ -84,7 +85,11 @@ usort($alarms, function ($a, $b) {
 <body>
   <h1>Alarm Clock</h1>
   <h2>Alarms</h2>
-  <table border>
+  <p>This simple UI allows for reading and writing configuration of alarms.
+  Only one alarm can be written at a time, and other alarms' configuration will
+  be lost in the process. So don't modify multiple alarms simultaneously.</p>
+  <p>TODO implement writing alarms</p>
+  <table border class="table-alarms">
     <thead>
       <tr>
         <th>Index</th>
@@ -92,108 +97,143 @@ usort($alarms, function ($a, $b) {
       </tr>
     </thead>
     <tbody>
-<?php foreach($alarms as $alarm): ?>
+<?php
+foreach($alarms as $alarm)
+{
+  // id prefix
+  $idp = "a{$alarm->index}";
+  echo <<<EOF
       <tr>
-        <td><?php echo $alarm->index; ?></td>
+        <td>{$alarm->index}</td>
         <td>
           <form method="post">
-            <input type="hidden" id="index" name="index" value="<?php echo $alarm->index; ?>">
+            <input type="hidden" name="index" value="{$alarm->index}">
             <table border>
               <tr>
-                <td><label for="enabled">Enabled</label></td>
+                <td><label for="$idp-enabled">Enabled</label></td>
                 <td>
-                  <select name="enabled" id="enabled" autocomplete="off">
+                  <select name="enabled" id="$idp-enabled" autocomplete="off">
                     <option hidden>unknown</option><!-- default - in case there was no 'selected' option -->
-<?php
-$enabled_options = array('OFF', 'SGL', 'RPT', 'SKP');
-foreach ($enabled_options as $option) : ?>
-                    <option <?php echo ($alarm->enabled == $option ? 'selected': ''); ?>>
-                      <?php echo $option . "\n"; ?>
+
+EOF;
+  $enabled_options = array('OFF', 'SGL', 'RPT', 'SKP');
+  foreach ($enabled_options as $option)
+  {
+    $option_selected = $alarm->enabled == $option ? " selected": "";
+    echo <<<EOF
+                    <option$option_selected>
+                      $option
                     </option>
-<?php endforeach; ?>
+
+EOF;
+  }
+  echo <<<EOF
                   </select>
                 </td>
               </tr>
               <tr>
                 <td>Days of week</td>
                 <td>
-<?php
-$dow = array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
-foreach ($dow as $option) : ?>
-                    <input type="checkbox" name="dow-<?php echo $option; ?>" id="dow-<?php echo $option; ?>" value="<?php echo $option; ?>"<?php echo (in_array($option, $alarm->days_of_week) ? ' checked': ''); ?>>
-                    <label for="dow-<?php echo $option; ?>"><?php echo $option; ?></label>
-<?php endforeach; ?>
+
+EOF;
+  $dow = array("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+  foreach ($dow as $option)
+  {
+    $checked = (in_array($option, $alarm->days_of_week) ? " checked": "");
+    echo <<<EOF
+                    <input type="checkbox" name="dow-$option" id="$idp-dow-$option" value="$option"$checked>
+                    <label for="$idp-dow-$option">$option</label>
+
+EOF;
+  }
+
+  $time = "";
+  if ($alarm->time->hours < 10) $time .= "0";
+  $time .= "{$alarm->time->hours}:";
+  if ($alarm->time->minutes < 10) $time .= "0";
+  $time .= "{$alarm->time->minutes}";
+
+  $lamp_on_checked = $alarm->signalization->lamp ? " checked" : "";
+  $lamp_off_checked = $alarm->signalization->lamp ? "" : " checked";
+  echo <<<EOF
                 </td>
               </tr>
               <tr>
-                <td><label for="time">Time</label></td>
+                <td><label for="$idp-time">Time</label></td>
                 <td>
-                  <input type="time" id="time" name="time" value="<?php
-  if ($alarm->time->hours < 10) echo "0";
-  echo "{$alarm->time->hours}:";
-  if ($alarm->time->minutes < 10) echo "0";
-  echo "{$alarm->time->minutes}";
-?>">
+                  <input type="time" id="$idp-time" name="time" value="$time">
                 </td>
               </tr>
               <tr>
-                <td><label for="snztime">Snooze time</label></td>
+                <td><label for="$idp-snztime">Snooze time</label></td>
                 <td>
-                  <input type="number" id="snztime" name="snztime" min="0" max="99" step="1" value="<?php echo $alarm->snooze->time; ?>">&nbsp;min
+                  <input type="number" id="$idp-snztime" name="snztime" min="0" max="99" step="1" value="{$alarm->snooze->time}">&nbsp;min
                 </td>
               </tr>
               <tr>
-                <td><label for="snzcount">Snooze count</label></td>
+                <td><label for="$idp-snzcount">Snooze count</label></td>
                 <td>
-                  <input type="number" id="snzcount" name="snztime" min="0" max="9" step="1" value="<?php echo $alarm->snooze->count; ?>">
+                  <input type="number" id="$idp-snzcount" name="snztime" min="0" max="9" step="1" value="{$alarm->snooze->count}">
                 </td>
               </tr>
               <tr>
-                <td><label for="sigambient">Ambient</label></td>
+                <td><label for="$idp-sigambient">Ambient</label></td>
                 <td>
-                  <input type="number" id="sigambient" name="sigambient" min="0" max="255" step="1" value="<?php echo $alarm->signalization->ambient; ?>">
+                  <input type="number" id="$idp-sigambient" name="sigambient" min="0" max="255" step="1" value="{$alarm->signalization->ambient}">
                 </td>
               </tr>
               <tr>
                 <td>Lamp</td>
                 <td>
-                  <input type="radio" id="sig-lamp-off" name="sig-lamp" value="0" <?php echo $alarm->signalization->lamp ? "" : "checked"; ?>>
-                  <label for="sig-lamp-off">lamp off</label>
-                  <input type="radio" id="sig-lamp-on" name="sig-lamp" value="1" <?php echo $alarm->signalization->lamp ? "checked" : ""; ?>>
-                  <label for="sig-lamp-on">lamp on</label>
+                  <input type="radio" id="$idp-sig-lamp-off" name="sig-lamp" value="0"$lamp_off_checked>
+                  <label for="$idp-sig-lamp-off">lamp off</label>
+                  <input type="radio" id="$idp-sig-lamp-on" name="sig-lamp" value="1"$lamp_on_checked>
+                  <label for="$idp-sig-lamp-on">lamp on</label>
                 </td>
               </tr>
               <tr>
-                <td><label for="sig-buzzer">Buzzer</label></td>
+                <td><label for="$idp-sig-buzzer">Buzzer</label></td>
                 <td>
-                  <select name="sig-buzzer" id="sig-buzzer" autocomplete="off">
+                  <select name="sig-buzzer" id="$idp-sig-buzzer" autocomplete="off">
                     <option hidden>unknown</option><!-- default - in case there was no 'selected' option -->
-<?php
-$buzzer_options = array(
-  0 => 'off',
-  1 => 'beeping'
-);
-for ($i = 0; $i<16; $i++)
-  $buzzer_options[$i+10] = "melody $i";
 
-foreach ($buzzer_options as $option_number => $option_text) : ?>
-                    <option value="<?php echo $option_number; ?>" <?php echo ($alarm->signalization->buzzer == $option_number ? 'selected': ''); ?>>
-                      <?php echo $option_text . "\n"; ?>
+EOF;
+  $buzzer_options = array(
+    0 => 'off',
+    1 => 'beeping'
+  );
+  for ($i = 0; $i<16; $i++)
+    $buzzer_options[$i+10] = "melody $i";
+
+  foreach ($buzzer_options as $option_number => $option_text)
+  {
+    $option_selected = ($alarm->signalization->buzzer == $option_number ? " selected": "");
+    echo <<<EOF
+                    <option value="$option_number"$option_selected>
+                      $option_text
                     </option>
-<?php endforeach; ?>
+
+EOF;
+  }
+  $json_pretty = json_encode(json_decode($alarm->json), JSON_PRETTY_PRINT);
+  echo <<<EOF
                   </select>
                 </td>
               </tr>
             </table>
-            <input type="submit">
+            <details>
+              <summary>raw json</summary>
+              <pre><code>$json_pretty</code></pre>
+            </details>
+            <input type="submit" value="Write alarm{$alarm->index}">
           </form>
         </td>
       </tr>
-<!-- TODO labels refer to wrong forms -->
-<!-- TODO handle POST requests -->
-<!-- TODO show / copy json -->
-<?php endforeach; ?>
+EOF;
+}
+?>
     </tbody>
   </table>
 </body>
+<!-- TODO handle POST requests -->
 </html>

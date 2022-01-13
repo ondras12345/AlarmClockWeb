@@ -24,3 +24,7 @@ th, td {
 table.table-striped tr:nth-child(even) {
     background-color: var(--color-current-line);
 }
+
+table.table-alarms > tbody > tr > td {
+  padding: 20px;
+}
