@@ -28,3 +28,7 @@ table.table-striped tr:nth-child(even) {
 table.table-alarms > tbody > tr > td {
   padding: 20px;
 }
+
+label.nowrap {
+    white-space: nowrap;
+}

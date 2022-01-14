@@ -141,8 +141,10 @@ EOF;
   {
     $checked = (in_array($option, $alarm->days_of_week) ? " checked": "");
     echo <<<EOF
-                    <input type="checkbox" name="dow-$option" id="$idp-dow-$option" value="$option"$checked>
-                    <label for="$idp-dow-$option">$option</label>
+                    <label for="$idp-dow-$option" class="nowrap">
+                      <input type="checkbox" name="dow-$option" id="$idp-dow-$option" value="$option"$checked>
+                      $option
+                    </label>
 
 EOF;
   }
