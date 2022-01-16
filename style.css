@@ -21,6 +21,11 @@ th, td {
   padding: 5px;
 }
 
+details {
+    border-left: 4px solid var(--color-comment);
+    padding-left: 4px;
+}
+
 table.table-striped tr:nth-child(even) {
     background-color: var(--color-current-line);
 }
@@ -31,4 +36,12 @@ table.table-alarms > tbody > tr > td {
 
 label.nowrap {
     white-space: nowrap;
+}
+
+.error {
+  color: var(--color-red);
+}
+
+.log {
+  color: var(--color-comment);
 }
