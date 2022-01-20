@@ -7,11 +7,8 @@
   <title>Alarms</title>
 </head>
 <?php
-require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/config.php';
-
-use PhpMqtt\Client\MqttClient;
-use PhpMqtt\Client\ConnectionSettings;
+require __DIR__ . '/MqttApiClient.php';
 
 
 class ParsingFailed extends Exception {}
@@ -123,117 +120,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
   }
 }
 
-$mqtt_errors = "";
 
-$MQTT_TOPIC_PREFIX = MQTT_TOPIC_PREFIX;
+$result = MqttApiClient\query($new_alarms);
 
-$client = new MqttClient(MQTT_HOST, MQTT_PORT);
-$connection_settings = (new ConnectionSettings)
-  ->setUsername(MQTT_USERNAME)
-  ->setPassword(MQTT_PASSWORD);
-$client->connect($connection_settings, true);
-
-$client->subscribe("$MQTT_TOPIC_PREFIX/err",
-  function(string $topic, string $message, bool $retained) use (&$mqtt_errors)
-  {
-    $mqtt_errors .= $message . "\n";
-  });
-
-$write_with_no_changes = false;  // might not be a write
-$write_log = "";
-if (!is_null($new_alarms))
-{
-  $write_with_no_changes = true;
-  foreach ($new_alarms as $alarm)
-  {
-    if ($alarm->changed)
-    {
-      $write_log .= "writing alarm {$alarm->index}\n";
-      $write_with_no_changes = false;
-      $client->publish("$MQTT_TOPIC_PREFIX/cmnd/alarm/write", json_encode($alarm));
-    }
-  }
-}
-
-// read alarms
-$number_of_alarms = 0;
-$alarms = array();
-
-$client->subscribe("$MQTT_TOPIC_PREFIX/stat/number_of_alarms",
-  function(string $topic, string $message, bool $retained) use ($client, &$number_of_alarms)
-  {
-    // Needed to fix a potential race condition during second loop
-    if ($number_of_alarms != 0)
-      return;
-    $number_of_alarms = $message;
-    $client->interrupt();
-  });
-$client->loop(true);
-
-$client->subscribe("$MQTT_TOPIC_PREFIX/stat/alarms/+",
-  function(string $topic, string $message, bool $retained) use ($client, $number_of_alarms, &$alarms)
-  {
-    $alarm = json_decode($message, false);
-    $matches = array();
-    preg_match_all('/alarms\/alarm([0-9]*)/', $topic, $matches);
-    $index = $matches[1][0];
-    $alarm->index = $index;
-    $alarm->json = $message;
-    array_push($alarms, $alarm);
-
-    $found_all = true;
-    for ($i = 0; $i < $number_of_alarms; $i++)
-    {
-      $found_current = false;
-      foreach ($alarms as $alarm)
-      {
-        if ($alarm->index == $i)
-        {
-          $found_current = true;
-          break;
-        }
-      }
-      if (!$found_current)
-      {
-        $found_all = false;
-        break;
-      }
-    }
-    if ($found_all)
-    {
-      // After receiving the first message on the subscribed topic, we want the
-      // client to stop listening for messages.
-      $client->interrupt();
-    }
-  });
-
-$client->publish("$MQTT_TOPIC_PREFIX/cmnd/alarms", "?");
-$client->loop(true);
-$client->disconnect();
-
-usort($alarms, function ($a, $b) {
-  return $a->index - $b->index;
-});
-
-//var_dump($alarms);
 ?>
 <body>
   <h1>Alarm Clock</h1>
   <h2>Alarms</h2>
   <p>This simple UI allows for reading and writing configuration of alarms.</p>
 <?php
-if (!empty($write_log))
+if (!empty($result->write_log))
 {
   echo <<<EOF
-  <pre class="log">$write_log</pre>
+  <pre class="log">{$result->write_log}</pre>
 
 EOF;
 }
 
-if (!empty($mqtt_errors))
+if (!empty($resut->mqtt_errors))
 {
   echo <<<EOF
-  <pre class="error">$mqtt_errors</pre>
+  <pre class="error">{$result->mqtt_errors}</pre>
 
 EOF;
 }
@@ -248,7 +155,7 @@ if(!empty($parsing_errors))
 EOF;
 }
 
-if($write_with_no_changes)
+if($result->write_with_no_changes)
 {
   echo <<<EOF
   <p class="error">
@@ -258,9 +165,9 @@ if($write_with_no_changes)
 EOF;
 }
 ?>
-  <!-- TODO post/redirect/get -->
+  <!-- TODO post/redirect/get; errors in session (requires aditional mqtt loop after writing ?!) -->
   <form method="post">
-    <input type="hidden" name="number_of_alarms" value="<?php echo $number_of_alarms; ?>">
+    <input type="hidden" name="number_of_alarms" value="<?php echo $result->number_of_alarms; ?>">
     <table border class="table-alarms">
       <thead>
         <tr>
@@ -270,7 +177,7 @@ EOF;
       </thead>
       <tbody>
 <?php
-foreach($alarms as $alarm)
+foreach($result->alarms as $alarm)
 {
   // id prefix
   $idp = "a{$alarm->index}";
