@@ -1,0 +1,5 @@
+.git
+.gitignore
+vendor
+config.php
+composer.phar
