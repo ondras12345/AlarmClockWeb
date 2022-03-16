@@ -316,7 +316,7 @@ EOF;
     <input type="submit" value="Write changes">
   </form>
 <?php
-if ($post)
+if ($post && DEBUG_MODE)
 {
   echo <<<EOF
   <h3>POST debug</h3>

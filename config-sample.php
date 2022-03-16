@@ -14,4 +14,7 @@ define('MQTT_PORT', 1883);
 define('MQTT_USERNAME', 'username');
 define('MQTT_PASSWORD', 'password');
 
+
+define('DEBUG_MODE', false);
+
 ?>
