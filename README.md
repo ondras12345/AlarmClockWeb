@@ -1,6 +1,6 @@
 # AlarmClockWeb
 This is a web interface for [AlarmClock][AlarmClock]. It uses the MQTT API
-(`examples/mqtt_bridge.py`) that is part of [PyAlarmClock][PyAlarmClock].
+(`ac2mqtt`) that is part of [PyAlarmClock][PyAlarmClock].
 
 
 ## Docker
