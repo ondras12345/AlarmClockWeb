@@ -45,3 +45,7 @@ label.nowrap {
 .log {
   color: var(--color-comment);
 }
+
+.calculated-value {
+  color: var(--color-comment);
+}

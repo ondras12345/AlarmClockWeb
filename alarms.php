@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
   <title>Alarms</title>
+  <script>
+    function calcSnooze(idp)
+    {
+      var time = parseInt(document.getElementById(idp+"-snztime").value);
+      var count = parseInt(document.getElementById(idp+"-snzcount").value);
+      var res = time*count;
+      document.getElementById(idp+"-time-snooze").innerHTML = "+ "+res+"&nbsp;min snooze";
+    }
+  </script>
 </head>
 <?php
 require __DIR__ . '/config.php';
@@ -241,20 +250,22 @@ EOF;
                 <td><label for="$idp-time">Time</label></td>
                 <td>
                   <input type="time" id="$idp-time" name="$idp-time" value="$time">
+                  <span class="calculated-value" id="$idp-time-snooze"></span>
                 </td>
               </tr>
               <tr>
                 <td><label for="$idp-snztime">Snooze time</label></td>
                 <td>
-                  <input type="number" id="$idp-snztime" name="$idp-snztime" min="0" max="99" step="1" value="{$alarm->snooze->time}">&nbsp;min
+                  <input type="number" id="$idp-snztime" name="$idp-snztime" min="0" max="99" step="1" value="{$alarm->snooze->time}" oninput="calcSnooze('$idp')">&nbsp;min
                 </td>
               </tr>
               <tr>
                 <td><label for="$idp-snzcount">Snooze count</label></td>
                 <td>
-                  <input type="number" id="$idp-snzcount" name="$idp-snzcount" min="0" max="9" step="1" value="{$alarm->snooze->count}">
+                  <input type="number" id="$idp-snzcount" name="$idp-snzcount" min="0" max="9" step="1" value="{$alarm->snooze->count}" oninput="calcSnooze('$idp')">
                 </td>
               </tr>
+              <script>calcSnooze('$idp');</script><!-- initial value -->
               <tr>
                 <td><label for="$idp-sig-ambient">Ambient</label></td>
                 <td>
