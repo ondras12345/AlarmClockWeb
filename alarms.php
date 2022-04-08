@@ -135,6 +135,7 @@ $result = MqttApiClient\query($new_alarms);
 ?>
 <body>
   <h1>Alarm Clock</h1>
+  <p><a href="./">Home</a></p>
   <h2>Alarms</h2>
   <p>This simple UI allows for reading and writing configuration of alarms.</p>
 <?php
