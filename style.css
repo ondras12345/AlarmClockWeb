@@ -49,3 +49,34 @@ label.nowrap {
 .calculated-value {
   color: var(--color-comment);
 }
+
+
+ul.navbar {
+    list-style-type: none;
+    padding: 0;
+    overflow: hidden;
+    background-color: var(--color-current-line);
+}
+
+ul.navbar li {
+    float: left;
+}
+
+ul.navbar li a {
+    display: block;
+    text-decoration: none;
+    padding: 14px 16px;
+    color: var(--color-foreground);
+}
+
+ul.navbar li a:hover {
+    background-color: var(--color-background);
+}
+
+ul#index.navbar li.menu-index a,
+ul#alarms.navbar li.menu-alarms a
+{
+    background-color: var(--color-green);
+    color: var(--color-background);
+
+}

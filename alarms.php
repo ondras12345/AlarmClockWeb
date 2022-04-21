@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/style.css">
   <title>Alarms</title>
   <script>
     function calcSnooze(idp)
@@ -134,9 +134,14 @@ $result = MqttApiClient\query($new_alarms);
 
 ?>
 <body>
-  <h1>Alarm Clock</h1>
-  <p><a href="./">Home</a></p>
-  <h2>Alarms</h2>
+  <header>
+    <nav>
+      <ul class="navbar" id="alarms">
+        <?php include 'menu_items.php'; ?>
+      </ul>
+    </nav>
+  </header>
+  <h1>Alarms</h1>
   <p>This simple UI allows for reading and writing configuration of alarms.</p>
 <?php
 if (!empty($result->write_log))
