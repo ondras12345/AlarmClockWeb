@@ -8,3 +8,7 @@ services:
       - 127.0.0.1:8080:80
     volumes:
       - ./config.php:/var/www/html/config.php:ro
+    # If you MQTT broker is running on the host, you should be able to
+    # connect to host.docker.internal from within the container.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
