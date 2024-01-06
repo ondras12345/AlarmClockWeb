@@ -16,7 +16,7 @@
   </script>
 </head>
 <?php
-require __DIR__ . '/config.php';
+//require __DIR__ . '/config.php';  // already included in MqttApiClient.php
 require __DIR__ . '/MqttApiClient.php';
 
 
