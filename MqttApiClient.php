@@ -66,6 +66,7 @@ function query(?array $alarms_to_write = null): QueryResult
   $client->subscribe("$MQTT_TOPIC_PREFIX/stat/alarms/+",
     function(string $topic, string $message, bool $retained) use ($client, &$result)
     {
+      if ($retained) return;  // ignore old retained messages, wait for new read
       $alarm = json_decode($message, false);
       $matches = array();
       preg_match_all('/alarms\/alarm([0-9]*)/', $topic, $matches);
