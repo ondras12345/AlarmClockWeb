@@ -103,6 +103,10 @@ function parsePost()
     if (empty($_POST["a$i-original_json"]))
       throw new ParsingFailed("No a$i-original_json");
     $original = json_decode(trim($_POST["a$i-original_json"]));
+    // strip extra properties to allow direct comparison
+    foreach($original as $key => $value) {
+      if (!property_exists($alarm, $key)) unset($original->$key);
+    }
 
     $alarm->changed = $alarm != $original;
     $alarm->index = $i;
