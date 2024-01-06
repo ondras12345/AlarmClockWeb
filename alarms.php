@@ -152,7 +152,7 @@ if (!empty($result->write_log))
 EOF;
 }
 
-if (!empty($resut->mqtt_errors))
+if (!empty($result->mqtt_errors))
 {
   echo <<<EOF
   <pre class="error">{$result->mqtt_errors}</pre>
