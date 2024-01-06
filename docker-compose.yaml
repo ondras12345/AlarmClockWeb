@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  alarmclockweb:
+    container_name: alarmclockweb
+    image: alarmclockweb
+    restart: unless-stopped
+    ports:
+      - 127.0.0.1:8080:80
+    volumes:
+      - ./config.php:/var/www/html/config.php:ro
