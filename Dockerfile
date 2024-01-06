@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:8.3-apache
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq && \
     apt-get install -y unzip
