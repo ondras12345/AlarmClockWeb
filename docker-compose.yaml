@@ -20,4 +20,4 @@ networks:
     ipam:
       driver: default
     driver_opts:
-      com.docker.network.bridge.name: br-alarmclockweb
+      com.docker.network.bridge.name: br-acweb
