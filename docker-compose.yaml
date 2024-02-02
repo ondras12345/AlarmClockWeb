@@ -12,3 +12,12 @@ services:
     # connect to host.docker.internal from within the container.
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - alarmclockweb
+
+networks:
+  alarmclockweb:
+    ipam:
+      driver: default
+    driver_opts:
+      com.docker.network.bridge.name: br-alarmclockweb
